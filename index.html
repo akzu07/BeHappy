@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BeHappy - Descanso Xpress</title>
+
+  <link rel="manifest" href="manifest.json" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+      background: #f0f8ff;
+      color: #333;
+    }
+    h1 {
+      color: #4caf50;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+      background-color: #4caf50;
+      border: none;
+      color: white;
+      border-radius: 5px;
+    }
+    input[type="number"] {
+      font-size: 1.2em;
+      width: 80px;
+      text-align: center;
+      margin-top: 10px;
+    }
+    #message {
+      margin-top: 30px;
+      font-size: 1.5em;
+      min-height: 50px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>BeHappy</h1>
+  <p>Configura cada cuántos minutos quieres que te recuerde tomar una pausa:</p>
+  <input id="interval" type="number" min="1" value="30" /> minutos<br />
+  <button id="startStopBtn">Iniciar recordatorios</button>
+
+  <div id="message"></div>
+
+  <script>
+    const phrases = [
+      "¡Toma agua! 💧",
+      "Estírate 2 minutos 🧘‍♂️",
+      "Respira profundo 🌬️",
+      "Sonríe y relájate 😊",
+      "Haz una pausa, te lo mereces ☕",
+      "Mira por la ventana y descansa la vista 👀",
+      "Paso a paso, todo se logra 💪",
+      "Enfócate. Respira. Continúa 🧘‍♂️",
+      "Una cosa a la vez. Vas bien 🎯",
+      "No te rindas, estás más cerca 🛤️",
+      "El esfuerzo de hoy es el éxito de mañana 📚"
+
+    ];
+
+    const intervalInput = document.getElementById("interval");
+    const startStopBtn = document.getElementById("startStopBtn");
+    const messageDiv = document.getElementById("message");
+
+    let timerId = null;
+    let isRunning = false;
+
+    if (localStorage.getItem("beHappyInterval")) {
+      intervalInput.value = localStorage.getItem("beHappyInterval");
+    }
+
+    function getRandomPhrase() {
+      return phrases[Math.floor(Math.random() * phrases.length)];
+    }
+
+    function showReminder() {
+      messageDiv.textContent = getRandomPhrase();
+    }
+
+    function startReminders() {
+      const minutes = parseInt(intervalInput.value);
+      if (isNaN(minutes) || minutes < 1) {
+        alert("Por favor ingresa un número válido mayor a 0");
+        return;
+      }
+      localStorage.setItem("beHappyInterval", minutes);
+      showReminder();
+      timerId = setInterval(showReminder, minutes * 60 * 1000);
+      startStopBtn.textContent = "Pausar recordatorios";
+      isRunning = true;
+    }
+
+    function stopReminders() {
+      clearInterval(timerId);
+      timerId = null;
+      messageDiv.textContent = "";
+      startStopBtn.textContent = "Iniciar recordatorios";
+      isRunning = false;
+    }
+
+    startStopBtn.addEventListener("click", () => {
+      if (isRunning) {
+        stopReminders();
+      } else {
+        startReminders();
+      }
+    });
+
+    // Registro del Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('Service Worker registrado.', reg))
+          .catch(err => console.log('Error registrando Service Worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>
